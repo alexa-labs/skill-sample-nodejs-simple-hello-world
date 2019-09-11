@@ -1,0 +1,83 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "シンプルハローワールド",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "SayHelloIntent",
+                    "slots": [],
+                    "samples": [
+                        "ハロー",
+                        "こんにちは"
+                    ]
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.YesIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NoIntent",
+                    "samples": []
+                },
+                {
+                    "name": "WhatCanIBuyIntent",
+                    "slots": [],
+                    "samples": [
+                        "買う",
+                        "買いたい",
+                        "購入する",
+                        "何を買える",
+                        "何が買える"
+                    ]
+                },
+                {
+                    "name": "SayEnglishHelloIntent",
+                    "slots": [],
+                    "samples": [
+                        "英語で",
+                        "英語では",
+                        "英語で言って",
+                        "英語でこんにちはと言って",
+                        "英語では何て言うの"
+                    ]
+                },
+                {
+                    "name": "BuyEnglishPackIntent",
+                    "slots": [],
+                    "samples": [
+                        "英語パックを購入する",
+                        "英語パックを買う",
+                        "英語パックについて教えて",
+                        "英語パックについて詳しく教えて"
+                    ]
+                },
+                {
+                    "name": "RefundEnglishPackIntent",
+                    "slots": [],
+                    "samples": [
+                        "英語パックを返品して",
+                        "英語パックを返金して",
+                        "英語パックをキャンセル"
+                    ]
+                }
+            ],
+            "types": []
+        }
+    }
+}

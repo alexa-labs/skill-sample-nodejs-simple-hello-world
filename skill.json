@@ -1,0 +1,31 @@
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "ja-JP": {
+          "summary": "スキルの短い説明",
+          "examplePhrases": [
+            "アレクサ、シンプルハローワールドを開いて",
+            "こんにちは",
+            "英語で言って"
+          ],
+          "name": "シンプルハローワールド",
+          "description": "スキルの長い説明"
+        }
+      },
+      "isAvailableWorldwide": true,
+      "testingInstructions": "テスト手順のサンプル",
+      "category": "EDUCATION_AND_REFERENCE",
+      "distributionCountries": []
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "sourceDir": "lambda/custom",
+          "uri": "ask-simple-hello-world"
+        }
+      }
+    },
+    "manifestVersion": "1.0"
+  }
+}

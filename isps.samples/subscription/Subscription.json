@@ -1,0 +1,54 @@
+{
+  "version": "1.0",
+  "type": "SUBSCRIPTION",
+  "referenceName": "Subscription",
+  "subscriptionInformation": {
+    "subscriptionPaymentFrequency": "MONTHLY",
+    "subscriptionTrialPeriodDays": 7
+  },
+  "publishingInformation": {
+    "locales": {
+      "ja-JP": {
+        "name": "サブスクリプション",
+        "summary": "サブスクリプションでは、英語で「こんにちは」と言ってくれます。",
+        "description": "サブスクリプションでは、英語で「こんにちは」と言ってくれます。",
+        "smallIconUri": "https://raw.githubusercontent.com/toshimin/skill-sample-nodejs-simple-hello-world/master/Subscription_108.png",
+        "largeIconUri": "https://raw.githubusercontent.com/toshimin/skill-sample-nodejs-simple-hello-world/master/Subscription_512.png",
+        "examplePhrases": [
+          "サブスクリプションを購入, サブスクリプションをキャンセル"
+        ],
+        "keywords": [
+          "英語, サブスクリプション"
+        ],
+        "customProductPrompts": {
+          "purchasePromptDescription": "サブスクリプションを購入すると、英語で「こんにちは」を聞くことができます。",
+          "boughtCardDescription": "サブスクリプションを購入しました。日本語の「こんにちは」を英語で言ってくれます。"
+        }
+      }
+    },
+    "distributionCountries": [
+      "JP"
+    ],
+    "pricing": {
+      "amazon.co.jp": {
+        "releaseDate": "2019-08-01T00:00Z",
+        "defaultPriceListing": {
+          "price": 100,
+          "currency": "JPY"
+        }
+      }
+    },
+    "taxInformation": {
+      "category": "SOFTWARE"
+    }
+  },
+  "privacyAndCompliance": {
+    "locales": {
+      "ja-JP": {
+        "privacyPolicyUrl": "https://localhost/privacy.html"
+      }
+    }
+  },
+  "testingInstructions": "「サブスクリプションを購入」と言ってください。",
+  "purchasableState": "PURCHASABLE"
+}

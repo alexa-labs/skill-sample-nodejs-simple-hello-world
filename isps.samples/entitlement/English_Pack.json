@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "type": "ENTITLEMENT",
+  "referenceName": "English_Pack",
+  "publishingInformation": {
+    "locales": {
+      "ja-JP": {
+        "name": "英語パック",
+        "summary": "英語パックでは、英語で「こんにちは」と言ってくれます。",
+        "description": "英語パックでは、英語で「こんにちは」と言ってくれます。",
+        "smallIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/24cf/a41fffb5428f4e69b2e3169a903625b9/APP_ICON?versionId=m_W2HD1SqARrsPBDmJgr7QzFjazPVxnz&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190830T054737Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190830%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=d84f33ed1aacf56630667f13eb4c616a3b22ca5f4d8e135e2e6ddbd1e1ad7cb6",
+        "largeIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/3fb0/22cd133e171b4eeb995361a94966dc85/APP_ICON_LARGE?versionId=eBo8n47CqtUGWK1_qw7gXcJsFzX2EzKI&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20190830T054737Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86400&X-Amz-Credential=AKIAJFEYRBGIHK2BBYKA%2F20190830%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=89d5250067bfd8c863c9409a8ec34fef857081afd4dea07154d0f18f60f07e0c",
+        "examplePhrases": [
+          "英語で言って, 英語パックを購入, 英語パックをキャンセル"
+        ],
+        "keywords": [
+          "英語"
+        ],
+        "customProductPrompts": {
+          "purchasePromptDescription": "英語パックを購入すると、英語で「こんにちは」と言ってくれます。",
+          "boughtCardDescription": "英語パックを購入すると、英語で「こんにちは」と言ってくれます。"
+        }
+      }
+    },
+    "distributionCountries": [
+      "JP"
+    ],
+    "pricing": {
+      "amazon.co.jp": {
+        "releaseDate": "2019-08-01T00:00Z",
+        "defaultPriceListing": {
+          "price": 100,
+          "currency": "JPY"
+        }
+      }
+    },
+    "taxInformation": {
+      "category": "SOFTWARE"
+    }
+  },
+  "privacyAndCompliance": {
+    "locales": {
+      "ja-JP": {
+        "privacyPolicyUrl": "https://localhost/privacy.html"
+      }
+    }
+  },
+  "testingInstructions": "「英語で言って」でUpsell、「英語パックを購入」でBuy、「英語パックをキャンセル」でCancelの購入プロセスに入ります。",
+  "purchasableState": "PURCHASABLE"
+}
