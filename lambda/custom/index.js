@@ -1,8 +1,7 @@
 const Alexa = require('ask-sdk');
 const skillName = 'シンプルハローワールド';
 
-const ENGLISH_PACK_ID = "amzn1.adg.product.16fa7bee-3bdf-43bc-9bb8-324dc5c7958d"; // 英語パックのProductIdをコピペしてください。
-const HELP_MESSAGE = "「こんにちは」と話しかけてください。英語の「こんにちは」を聞きたい時は、「英語で言って！」と言ってください。どうしますか？";
+const HELP_MESSAGE = "「こんにちは」と話しかけてください。英語で「こんにちは」を聞きたい場合は、「英語で言って！」と言ってください。どうしますか？";
 
 const LaunchRequestHandler = {
 	canHandle(handlerInput) {
@@ -30,16 +29,20 @@ const SayHelloHandler = {
 		const locale = handlerInput.requestEnvelope.request.locale;
 		const ms = handlerInput.serviceClientFactory.getMonetizationServiceClient();
 
-		return ms.getInSkillProduct(locale, ENGLISH_PACK_ID).then(function (product) {
-			console.log("PRODUCT=" + JSON.stringify(product));
+		return ms.getInSkillProducts(locale, null, 'ENTITLED').then(function (res) {
+
 			let speechText = "";
 			const repromptText = "もっと聞きたいですか？";
-			if (product.entitled === "NOT_ENTITLED") {
-				// 英語パックを未購入 => 日本語で言う
+			const products = res.inSkillProducts;
+
+			console.log("PRODUCTS=" + JSON.stringify(products));
+
+			if (products.length === 0) {
+				// 英語パックもサブスクリプションも未購入 => 日本語で言う
 				speechText = '<say-as interpret-as="interjection">こんにちは</say-as>';
 			}
 			else {
-				// 英語パックを購入済 => 英語で言う
+				// 英語パックかサブスクリプションのどちらか購入済 => 英語で言う
 				speechText = '<voice name="Joanna"><lang xml:lang="en-US">Hello!</lang></voice>';
 			}
 
@@ -70,12 +73,50 @@ const NoIntentHandler = {
 // 「何が買える？」と聞かれた時の応答
 const WhatCanIBuyIntentHandler = {
 	canHandle(handlerInput) {
-		// 課題３: ここを実装してください。
+		return (handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+			handlerInput.requestEnvelope.request.intent.name === 'WhatCanIBuyIntent');
 	},
 	handle(handlerInput) {
-		// 課題３: ここを実装してください。
+		// スキル内課金で購入できる商品情報を入手する
+		const locale = handlerInput.requestEnvelope.request.locale;
+		const ms = handlerInput.serviceClientFactory.getMonetizationServiceClient();
+		return ms.getInSkillProducts(locale, 'PURCHASABLE', 'NOT_ENTITLED').then(function (res) {
+
+			// res にはスキルで提供する全てのISP商品のリストが含まれる
+			// ここでは、JavaScriptのフィルターを使って、購入可能(PURCHASABLE)かつ未購入(NOT_ENTITLED)の商品のリストを抽出する
+			const products = res.inSkillProducts;
+			console.log("PRODUCTS=" + JSON.stringify(products));
+			// 購入可能な商品を言う。
+			if (products.length > 0) {
+				// 一つ以上の商品を購入可能な場合、商品のリストを繋げて言う
+				const speechText = `現在、購入できる商品は、${getSpeakableListOfProducts(products)} です。
+							詳しく知りたい場合は、例えば「${products[0].name}について詳しく教えて。」と言ってください。
+							このまま続けたい場合は、「こんにちは」と言ってください。どうしますか？`;
+				const repromptOutput = 'すみません、もう一度言ってください。';
+				return handlerInput.responseBuilder
+					.speak(speechText)
+					.reprompt(repromptOutput)
+					.getResponse();
+			}
+			else {
+				// すでに購入済か、購入できる商品がない場合
+				speechText = '現在、購入できる商品はありません。続けますか？';
+				repromptText = '続けますか？';
+			}
+			return handlerInput.responseBuilder
+				.speak(speechText)
+				.reprompt(repromptText)
+				.getResponse();
+		});
 	}
 };
+
+// 購入可能な商品のリストを生成するヘルパー関数
+function getSpeakableListOfProducts(products) {
+	const productNameList = products.map(item => item.name);
+	let speechText = productNameList.join('、または'); // 商品名を「または」で連結して一文を作成する。
+	return speechText;
+}
 
 // 英語パックについて教えて。英語パックを購入。と言った場合。
 const BuyEnglishPackIntentHandler = {
@@ -87,12 +128,17 @@ const BuyEnglishPackIntentHandler = {
 		const locale = handlerInput.requestEnvelope.request.locale;
 		const ms = handlerInput.serviceClientFactory.getMonetizationServiceClient();
 
-		return ms.getInSkillProduct(locale, ENGLISH_PACK_ID).then(function (product) {
+		return ms.getInSkillProducts(locale).then(function (res) {
 			// 商品情報を入手する
+			let products = res.inSkillProducts.filter(
+				record => record.entitled === 'ENTITLED'
+			);
 
-			if (product.entitled === "ENTITLED") {
+			console.log("PRODUCTS=" + JSON.stringify(products));
+
+			if (products.length > 0) {
 				// 購入済
-				const speechText = `既に${product.name} を購入しています。続けますか？`;
+				const speechText = `既に${products[0].name} を購入しています。続けますか？`;
 				const repromptText = `続けますか？`;
 				return handlerInput.responseBuilder
 					.speak(speechText)
@@ -101,6 +147,11 @@ const BuyEnglishPackIntentHandler = {
 			}
 			else {
 				// 未購入 => 購入プロセスへ
+				// 「英語パック」のproductIdを入手
+				products = res.inSkillProducts.filter(
+					record => record.referenceName === 'English_Pack'
+				);
+
 				console.log('**** Send Buy Directive ****');
 				return handlerInput.responseBuilder
 					.addDirective({
@@ -108,7 +159,57 @@ const BuyEnglishPackIntentHandler = {
 						name: 'Buy',
 						payload: {
 							InSkillProduct: {
-								productId: ENGLISH_PACK_ID
+								productId: products[0].productId
+							}
+						},
+						token: 'correlationToken'
+					})
+					.getResponse();
+			}
+		});
+	}
+};
+
+// サブスクリプションついて教えて。サブスクリプションを購入。と言った場合。
+const BuySubscriptionIntentHandler = {
+	canHandle(handlerInput) {
+		return handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+			handlerInput.requestEnvelope.request.intent.name === 'BuySubscriptionIntent';
+	},
+	handle(handlerInput) {
+		const locale = handlerInput.requestEnvelope.request.locale;
+		const ms = handlerInput.serviceClientFactory.getMonetizationServiceClient();
+
+		return ms.getInSkillProducts(locale).then(function (res) {
+			// 商品情報を入手する
+			const entitledProducts = res.inSkillProducts.filter(record => record.entitled == 'ENTITLED');
+
+			console.log("PRODUCTS=" + JSON.stringify(entitledProducts));
+
+			if (entitledProducts.length > 0) {
+				// 購入済
+				const speechText = `既に${entitledProducts[0].name} を購入しています。続けますか？`;
+				const repromptText = `続けますか？`;
+				return handlerInput.responseBuilder
+					.speak(speechText)
+					.reprompt(repromptText)
+					.getResponse();
+			}
+			else {
+				// 未購入 => 購入プロセスへ
+				// 「サブスクリプション」の商品情報入手
+				const subscriptionProducts = res.inSkillProducts.filter(
+					record => record.referenceName === 'Subscription'
+				);
+
+				console.log('**** Send Buy Directive ****');
+				return handlerInput.responseBuilder
+					.addDirective({
+						type: 'Connections.SendRequest',
+						name: 'Buy',
+						payload: {
+							InSkillProduct: {
+								productId: subscriptionProducts[0].productId
 							}
 						},
 						token: 'correlationToken'
@@ -130,43 +231,46 @@ const SayEnglishHelloIntentHandler = {
 		const locale = handlerInput.requestEnvelope.request.locale;
 		const ms = handlerInput.serviceClientFactory.getMonetizationServiceClient();
 
-		return ms.getInSkillProduct(locale, ENGLISH_PACK_ID).then(function (product) {
+		return ms.getInSkillProducts(locale).then(function (res) {
 
-			console.log("PRODUCT=" + JSON.stringify(product));
+			let products = res.inSkillProducts.filter(
+				record => record.entitled === 'ENTITLED'
+			);
 
+			console.log("PRODUCTS=" + JSON.stringify(products));
+
+			let repromptText = '';
 			let speechText = '';
-			const repromptText = 'もっと聞きたいですか？';
-			if (product.entitled === "ENTITLED") {
+
+			if (products.length > 0 && products[0].entitled === "ENTITLED") {
 				// 購入済。新たに購入する必要はないので、そのまま英語で言う。
-				speechText = `<voice name="Joanna"><lang xml:lang="en-US">Hello!</lang></voice>
-							<break time="1s"/>${repromptText}`;
+				repromptText = 'もっと聞きたいですか？';
+				speechText = `< voice name = "Joanna" > <lang xml: lang="en-US">Hello!</lang></voice >
+					<break time="1s" />${ repromptText} `;
 				return handlerInput.responseBuilder
 					.speak(speechText)
 					.reprompt(repromptText)
 					.getResponse();
 			}
-			else {
-				// 未購入の場合はアップセル
-				speechText = `英語の「こんにちは」を聞くには、${product.name}が必要です。詳しく聞きたいですか？`;
-				console.log('**** Send Upsell Directive ****');
-				return handlerInput.responseBuilder
-					.addDirective({
-						type: 'Connections.SendRequest',
-						name: 'Upsell',
-						payload: {
-							InSkillProduct: {
-								productId: ENGLISH_PACK_ID
-							},
-							upsellMessage: speechText
-						},
-						token: 'correlationToken'
-					})
-					.getResponse();
-			}
+			// 未購入の場合は購入可能な商品を調べ、購入を勧めるか、このまま続けるか選択してもらう。
+			// 購入可能(PURCHASABLE)かつ未購入(NOT_ENTITLED)の商品のリストを抽出する
+			products = res.inSkillProducts.filter(
+				record => record.entitled === 'NOT_ENTITLED'
+			);
+
+			speechText = `英語で「こんにちは」を聞くには、${getSpeakableListOfProducts(products)} の購入が必要です。`;
+			products.forEach(function (item) {
+				speechText += `${item.name} を購入したい場合は、「${item.name} を購入」と言ってください。`
+			});
+			speechText += `このまま続けたい場合は、「こんにちは」と言ってください。どうしますか？`;
+			repromptText = 'どうしますか？';
+			return handlerInput.responseBuilder
+				.speak(speechText)
+				.reprompt(repromptText)
+				.getResponse();
 		});
 	}
 };
-
 
 // 購入フロー Buy|Upsell からスキルに戻ってきた時の処理
 const BuyResponseHandler = {
@@ -178,8 +282,9 @@ const BuyResponseHandler = {
 	handle(handlerInput) {
 		const locale = handlerInput.requestEnvelope.request.locale;
 		const ms = handlerInput.serviceClientFactory.getMonetizationServiceClient();
+		const productId = handlerInput.requestEnvelope.request.payload.productId;
 
-		return ms.getInSkillProduct(locale, ENGLISH_PACK_ID).then(function (product) {
+		return ms.getInSkillProduct(locale, productId).then(function (product) {
 
 			if (handlerInput.requestEnvelope.request.status.code === '200') {
 
@@ -202,7 +307,7 @@ const BuyResponseHandler = {
 						break;
 					default:
 						// その他のERROR
-						speechText = `うまく行かなかったようですが、${product.name} にご興味をいただき、ありがとうございました。${repromptText}`;
+						speechText = `うまく行かなかったようですが、${product.name} にご興味をいただき、ありがとうございました。${repromptText} `;
 						break;
 				}
 				// ユーザーに応答を返す
@@ -233,20 +338,60 @@ const RefundEnglishPackIntentHandler = {
 		);
 	},
 	handle(handlerInput) {
+		const locale = handlerInput.requestEnvelope.request.locale;
+		const monetizationClient = handlerInput.serviceClientFactory.getMonetizationServiceClient();
+
 		// 購入フロー(Cencel)を渡す。一旦セッションが終了する。
-		console.log('**** Send Cancel Directive ****');
-		return handlerInput.responseBuilder
-			.addDirective({
-				type: 'Connections.SendRequest',
-				name: 'Cancel',
-				payload: {
-					InSkillProduct: {
-						productId: ENGLISH_PACK_ID
-					}
-				},
-				token: 'correlationToken'
-			})
-			.getResponse();
+		return monetizationClient.getInSkillProducts(locale).then(function (res) {
+			const products = res.inSkillProducts.filter(
+				record => record.referenceName === 'English_Pack'
+			);
+			return handlerInput.responseBuilder
+				.addDirective({
+					type: 'Connections.SendRequest',
+					name: 'Cancel',
+					payload: {
+						InSkillProduct: {
+							productId: products[0].productId
+						}
+					},
+					token: 'correlationToken'
+				})
+				.getResponse();
+		});
+	}
+};
+
+// 「サブスクリプションをキャンセルして」「サブスクリプションを解約したい」と言われた場合。
+const CancelSubscriptionIntentHandler = {
+	canHandle(handlerInput) {
+		return (
+			handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+			handlerInput.requestEnvelope.request.intent.name === 'CancelSubscriptionIntent'
+		);
+	},
+	handle(handlerInput) {
+		const locale = handlerInput.requestEnvelope.request.locale;
+		const monetizationClient = handlerInput.serviceClientFactory.getMonetizationServiceClient();
+
+		// 購入フロー(Cencel)を渡す。一旦セッションが終了する。
+		return monetizationClient.getInSkillProducts(locale).then(function (res) {
+			const products = res.inSkillProducts.filter(
+				record => record.referenceName === 'Subscription'
+			);
+			return handlerInput.responseBuilder
+				.addDirective({
+					type: 'Connections.SendRequest',
+					name: 'Cancel',
+					payload: {
+						InSkillProduct: {
+							productId: products[0].productId
+						}
+					},
+					token: 'correlationToken'
+				})
+				.getResponse();
+		});
 	}
 };
 
@@ -259,16 +404,15 @@ const CancelProductResponseHandler = {
 	handle(handlerInput) {
 		const locale = handlerInput.requestEnvelope.request.locale;
 		const ms = handlerInput.serviceClientFactory.getMonetizationServiceClient();
+		const productId = handlerInput.requestEnvelope.request.payload.productId;
+		let speechText = '';
+		const repromptText = '続けますか？';
 
-		return ms.getInSkillProduct(locale, ENGLISH_PACK_ID).then(function (product) {
+		return ms.getInSkillProduct(locale, productId).then(function (product) {
 
-			console.log(`PRODUCT = ${JSON.stringify(product)} `);
+			console.log(`PRODUCTS = ${JSON.stringify(product)} `);
 
 			if (handlerInput.requestEnvelope.request.status.code === '200') {
-
-				let speechText = product.summary;
-				const repromptText = '続けますか？';
-
 				// ステータコードによって、Alexaのキャンセル応答の最後に付け加えるスピーチの内容を切り替える。
 				// ここでは、いずれの場合でも同じスピーチを付け加えています。必要に応じて変更してください。
 				switch (handlerInput.requestEnvelope.request.payload.purchaseResult) {
@@ -286,7 +430,7 @@ const CancelProductResponseHandler = {
 						break;
 					default:
 						// 何らかのエラー
-						speechText = `キャンセル処理がうまく行かなかったようです。${repromptText}`;
+						speechText = `キャンセル処理がうまく行かなかったようです。${repromptText} `;
 						console.log(`Cancel process returned an error: ${handlerInput.requestEnvelope.request.status.message} `);
 						break;
 				}
@@ -390,9 +534,11 @@ exports.handler = skillBuilder
 		NoIntentHandler,
 		WhatCanIBuyIntentHandler,
 		BuyEnglishPackIntentHandler,
+		BuySubscriptionIntentHandler,
 		SayEnglishHelloIntentHandler,
 		BuyResponseHandler,
 		RefundEnglishPackIntentHandler,
+		CancelSubscriptionIntentHandler,
 		CancelProductResponseHandler,
 		HelpIntentHandler,
 		CancelAndStopIntentHandler,
