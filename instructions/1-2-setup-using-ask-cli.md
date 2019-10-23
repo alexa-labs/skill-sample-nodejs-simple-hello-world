@@ -13,44 +13,31 @@ ASK CLI を利用できる環境があれば、**方法１**よりももっと�
 
 1. OS のターミナルアプリケーションを起動します。
 
-1. プロジェクトファイルを ZIP でダウンロードするか、git コマンドでクローンするかを選択します。それぞれの手順は以下の通り。
+1. クローンするための URL をコピーします（HTTPS の URL を選択してください）。
+   ![1-40](./images/1-40-copy-https-url.png)
 
-    - **ZIP ファイルをダウンロードする場合**
+1. 任意のワーキングフォルダーに移動します。
 
-        1. 「Download ZIP」をクリックして ZIP ファイルをローカルにダウンロードします。
-           ![1-40](./images/1-40-zip-download.png)
+    ```bash
+    $ cd <working folder>
+    ```
 
-        1. ダウンロードした ZIP ファイルを任意のワーキングフォルダで解凍します。
+1. プロジェクトファイルをクローンします。
 
-        1. ローカルに skill-sample-nodejs-simple-hello-world フォルダができているはずです。
+    ```bash
+    $ ask new --url https://github.com:alexa-labs/skill-sample-nodejs-simple-hello-world.git
+    ```
 
-    - **git コマンドでクローンする場合**
+    出力結果
+    ![1-40](./images/1-40-ask-new.png)
 
-        1. クローンするための URL をコピーします。
-           ![1-40](./images/1-40-copy-url.png)
+1. ローカルディクス上に skill-sample-nodejs-simple-hello-world フォルダーができているはずです。
 
-        1. 任意のワーキングフォルダーに移動します。
+1. カレントフォルダーを **skill-sample-nodejs-simple-hello-world** 内に移動します。
 
-            ```bash
-            $ cd <working folder>
-            ```
-
-        1. ASK コマンドを使って、サンプルプロジェクトをダウンロードします。
-
-            ```bash
-            $ ask new --url https://github.com/alexa-labs/skill-sample-nodejs-simple-hello-world.git
-            ```
-
-            出力結果
-            ![1-40](./images/1-40-ask-clone.png)
-
-        1. ローカルに skill-sample-nodejs-simple-hello-world フォルダができているはずです。
-
-        1. カレントフォルダーを **skill-sample-nodejs-simple-hello-world** 内に移動します。
-
-            ```bash
-            $ cd skill-sample-nodejs-simple-hello-world
-            ```
+    ```bash
+    $ cd skill-sample-nodejs-simple-hello-world
+    ```
 
 1. ask コマンドでスキルをデプロイします。
 

@@ -9,7 +9,7 @@
             "こんにちは",
             "英語で言って"
           ],
-          "name": "シンプルハローワールド",
+          "name": "skill-sample-nodejs-simple-hello-world",
           "description": "スキルの長い説明"
         }
       },
@@ -22,7 +22,7 @@
       "custom": {
         "endpoint": {
           "sourceDir": "lambda/custom",
-          "uri": "ask-simple-hello-world"
+          "uri": "ask-custom-skill-sample-nodejs-simple-hello-world-default"
         }
       }
     },
